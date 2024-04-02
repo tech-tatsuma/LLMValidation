@@ -1,15 +1,28 @@
-from langchain.smith import RunEvalConfig, run_on_dataset
+from langchain.smith import RunEvalConfig
 from langsmith.evaluation import EvaluationResult, run_evaluator
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 
 # 外部のライブラリのインポート
-from datasets.create_dataset import simple_create_dataset, create_runnalble, create_dataset_from_json
+from datasets.create_dataset import create_dataset_from_json
 
 from dotenv import load_dotenv
+import uuid
 
 load_dotenv()
+uid = uuid.uuid4()
+
+# runnableの作成
+def create_runnalble():
+    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    prompt = ChatPromptTemplate.from_messages([("human", "Spit some bars about {question}.")])
+    chain = prompt | llm | StrOutputParser()
+
+    return chain
 
 # データセットの名前の設定
-dataset_name = "kitei"
+dataset_name = f"kitei - {uid}"
 # データセットの作成
 # client = simple_create_dataset(dataset_name)
 client = create_dataset_from_json(r"C:\Users\DT5914\Desktop\all_datasets\dataset\kitei",dataset_name)
@@ -50,7 +63,7 @@ client.run_on_dataset(
     dataset_name=dataset_name,
     llm_or_chain_factory=chain,
     evaluation=eval_config,
-    project_name="kitei",
+    project_name=f"kitei - {uid}",
     # Any experiment metadata can be specified here
     project_metadata={"version": "1.0.0"},
 )
